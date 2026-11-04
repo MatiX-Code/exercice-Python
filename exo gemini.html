@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestionnaire de Magasin - RPG</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f4f9; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 350px; }
+        input { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; }
+        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; }
+        button:hover { background: #4338ca; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        #console-log { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; margin-top: 20px; min-height: 120px; }
+    </style>
+</head>
+<body>
+
+    <h1>📦 Gestionnaire de Magasin RPG interactif</h1>
+    <p>Application web connectée à tes fonctions Python grâce à PyScript !</p>
+
+    <div class="container">
+        <!-- Carte : Statistiques & Affichage -->
+        <div class="card">
+            <h3>📊 Vue d'ensemble</h3>
+            <button py-click="btn_valeur_totale">Calculer la valeur totale</button>
+            <br><br>
+            <button py-click="btn_trier">Trier par prix</button>
+        </div>
+
+        <!-- Carte : Filtrer par type -->
+        <div class="card">
+            <h3>🔍 Filtrer par type</h3>
+            <label>Type recherché (ex: arme, potion) :</label>
+            <input type="text" id="input_type" value="arme">
+            <button py-click="btn_filtrer">Filtrer</button>
+        </div>
+
+        <!-- Carte : Ajouter un objet -->
+        <div class="card">
+            <h3>➕ Ajouter un objet</h3>
+            <label>Nom :</label>
+            <input type="text" id="ajout_nom" placeholder="Ex: Arc magique">
+            <label>Prix :</label>
+            <input type="number" id="ajout_prix" placeholder="Ex: 1200">
+            <label>Type :</label>
+            <input type="text" id="ajout_type" placeholder="Ex: arme">
+            <button py-click="btn_ajouter">Ajouter au magasin</button>
+        </div>
+
+        <!-- Carte : Supprimer un objet -->
+        <div class="card">
+            <h3>🗑️ Supprimer un objet</h3>
+            <label>Nom de l'objet à supprimer :</label>
+            <input type="text" id="suppr_nom" placeholder="Ex: Excalibur">
+            <button class="btn-danger" py-click="btn_supprimer">Supprimer du magasin</button>
+        </div>
+    </div>
+
+    <!-- Zone d'affichage (Console virtuelle) -->
+    <h3>💻 Console de résultats :</h3>
+    <div id="console-log">Bienvenue ! Clique sur un bouton pour lancer tes fonctions Python.</div>
+
+    <!-- Ton code Python -->
+    <py-script>
+from pyscript import document
+
+# Données initiales
+magasin = [
+    {'nom': 'Excalibur', 'prix': 2500, 'type': 'arme'},
+    {'nom': 'Potion de vie', 'prix': 500, 'type': 'potion'},
+    {'nom': 'Plastron de Dragon de Jade', 'prix': 850, 'type': 'armure'}
+]
+
+def ecrire_console(texte):
+    console_element = document.querySelector("#console-log")
+    console_element.innerText = texte
+
+# 1. Calculer valeur totale
+def btn_valeur_totale(event):
+    total = 0
+    for objet in magasin:
+        total += objet['prix']
+    ecrire_console(f"💰 Le montant total du magasin est de {total} pièces d'or.")
+
+# 2. Trier par prix
+def btn_trier(event):
+    inventaire_trie = sorted(magasin, key=lambda x: x['prix'])
+    resultat = "📉 Liste triée par prix :\n"
+    for o in inventaire_trie:
+        resultat += f"- {o['nom']} ({o['prix']} po) [{o['type']}]\n"
+    ecrire_console(resultat)
+
+# 3. Filtrer par type
+def btn_filtrer(event):
+    type_rech = document.querySelector("#input_type").value.strip()
+    trouve = False
+    resultat = f"🔍 Résultats pour le type '{type_rech}' :\n"
+    for objet in magasin:
+        if objet['type'] == type_rech:
+            resultat += f"- {objet['nom']} ({objet['prix']} po)\n"
+            trouve = True
+    if not trouve:
+        resultat += f"Désolé, nous n'avons pas ce type d'objets !"
+    ecrire_console(resultat)
+
+# 4. Ajouter un objet
+def btn_ajouter(event):
+    nom = document.querySelector("#input_type").value # ou champs dédiés
+    nom_input = document.querySelector("#ajout_nom").value.strip()
+    prix_str = document.querySelector("#ajout_prix").value.strip()
+    type_obj = document.querySelector("#ajout_type").value.strip()
+    
+    if nom_input and prix_str and type_obj:
+        nouveau_prix = int(prix_str)
+        magasin.append({'nom': nom_input, 'prix': nouveau_prix, 'type': type_obj})
+        ecrire_console(f"✅ Succès ! '{nom_input}' a été ajouté au magasin.")
+    else:
+        ecrire_console("❌ Erreur : Veuillez remplir tous les champs pour l'ajout.")
+
+# 5. Supprimer un objet (La nouveauté !)
+def btn_supprimer(event):
+    nom_a_supprimer = document.querySelector("#suppr_nom").value.strip()
+    trouve = False
+    
+    # On parcourt la liste à l'envers ou on filtre, 
+    # ou on utilise la logique classique de suppression par boucle :
+    for objet in magasin:
+        if objet['nom'].lower() == nom_a_supprimer.lower():
+            magasin.remove(objet)
+            trouve = True
+            break
+            
+    if trouve:
+        ecrire_console(f"🗑️ L'objet '{nom_a_supprimer}' a été supprimé avec succès !")
+    else:
+        ecrire_console(f"❌ Introuvable : Aucun objet nommé '{nom_a_supprimer}' dans le magasin.")
+    </py-script>
+
+</body>
+</html>
