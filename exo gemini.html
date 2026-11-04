@@ -10,10 +10,12 @@
         .container { display: flex; gap: 20px; flex-wrap: wrap; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 350px; }
         input { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; }
-        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; }
+        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; margin-bottom: 5px; }
         button:hover { background: #4338ca; }
         .btn-danger { background: #dc2626; }
         .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #059669; }
+        .btn-success:hover { background: #047857; }
         #console-log { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; margin-top: 20px; min-height: 120px; }
     </style>
 </head>
@@ -23,11 +25,12 @@
     <p>Application web connectée à tes fonctions Python grâce à PyScript !</p>
 
     <div class="container">
-        <!-- Carte : Statistiques & Affichage -->
+        <!-- Carte : Affichage & Statistiques -->
         <div class="card">
             <h3>📊 Vue d'ensemble</h3>
+            <!-- Le nouveau bouton pour voir tout l'inventaire -->
+            <button class="btn-success" py-click="btn_afficher_inventaire">Afficher tout l'inventaire</button>
             <button py-click="btn_valeur_totale">Calculer la valeur totale</button>
-            <br><br>
             <button py-click="btn_trier">Trier par prix</button>
         </div>
 
@@ -79,6 +82,17 @@ def ecrire_console(texte):
     console_element = document.querySelector("#console-log")
     console_element.innerText = texte
 
+# 0. Afficher tout l'inventaire (La nouveauté !)
+def btn_afficher_inventaire(event):
+    if not magasin:
+        ecrire_console("📂 Le magasin est actuellement vide.")
+        return
+        
+    resultat = "📦 Inventaire complet du magasin :\n"
+    for objet in magasin:
+        resultat += f"- {objet['nom']} | Prix : {objet['prix']} po | Type : {objet['type']}\n"
+    ecrire_console(resultat)
+
 # 1. Calculer valeur totale
 def btn_valeur_totale(event):
     total = 0
@@ -109,7 +123,6 @@ def btn_filtrer(event):
 
 # 4. Ajouter un objet
 def btn_ajouter(event):
-    nom = document.querySelector("#input_type").value # ou champs dédiés
     nom_input = document.querySelector("#ajout_nom").value.strip()
     prix_str = document.querySelector("#ajout_prix").value.strip()
     type_obj = document.querySelector("#ajout_type").value.strip()
@@ -121,13 +134,11 @@ def btn_ajouter(event):
     else:
         ecrire_console("❌ Erreur : Veuillez remplir tous les champs pour l'ajout.")
 
-# 5. Supprimer un objet (La nouveauté !)
+# 5. Supprimer un objet
 def btn_supprimer(event):
     nom_a_supprimer = document.querySelector("#suppr_nom").value.strip()
     trouve = False
     
-    # On parcourt la liste à l'envers ou on filtre, 
-    # ou on utilise la logique classique de suppression par boucle :
     for objet in magasin:
         if objet['nom'].lower() == nom_a_supprimer.lower():
             magasin.remove(objet)
